@@ -9,6 +9,7 @@ import requests
 from flask import Flask, jsonify
 import logging
 import argparse
+import base64
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +20,10 @@ app = Flask(__name__)
 # Default inverter IP address
 DEFAULT_INVERTER_IP = "192.168.100.52"
 INVERTER_IP = DEFAULT_INVERTER_IP
+
+# Authentication credentials
+AUTH_USERNAME = None
+AUTH_PASSWORD = None
 
 def extract_js_variables(html_content):
     """
@@ -58,8 +63,16 @@ def fetch_inverter_status():
         # Build URL dynamically using current INVERTER_IP
         status_url = f"http://{INVERTER_IP}/status.html"
         
+        # Set up headers with Basic Authentication if credentials are provided
+        headers = {}
+        if AUTH_USERNAME and AUTH_PASSWORD:
+            # Create Basic auth header
+            credentials = f"{AUTH_USERNAME}:{AUTH_PASSWORD}"
+            encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+            headers['Authorization'] = f'Basic {encoded_credentials}'
+        
         # Fetch the status page
-        response = requests.get(status_url, timeout=10)
+        response = requests.get(status_url, headers=headers, timeout=10)
         response.raise_for_status()
         
         # Extract variables from the HTML content
@@ -126,14 +139,24 @@ if __name__ == '__main__':
     parser.add_argument('--host',
                        default='0.0.0.0',
                        help='Flask server host (default: 0.0.0.0)')
+    parser.add_argument('--username', '-u',
+                       help='Username for Basic authentication')
+    parser.add_argument('--password', '-p',
+                       help='Password for Basic authentication')
     
     args = parser.parse_args()
     
     # Set global variables
     INVERTER_IP = args.ip
+    AUTH_USERNAME = args.username
+    AUTH_PASSWORD = args.password
     STATUS_URL = f"http://{INVERTER_IP}/status.html"
     
     # Start Flask server
     logger.info(f"Starting Flask server on {args.host}:{args.port}")
     logger.info(f"Inverter IP: {INVERTER_IP}")
+    if AUTH_USERNAME:
+        logger.info(f"Using Basic authentication with username: {AUTH_USERNAME}")
+    else:
+        logger.info("No authentication credentials provided")
     app.run(host=args.host, port=args.port, debug=True)

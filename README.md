@@ -9,6 +9,7 @@ A Python Flask application that scrapes status data from a Microtek inverter and
 - Returns data in JSON format
 - Handles numeric type conversion automatically
 - Includes error handling and logging
+- Supports Basic HTTP authentication for secured inverters
 
 ## Installation
 
@@ -25,6 +26,19 @@ You can specify the inverter IP address as a command line parameter:
 python microtek.py --ip 192.168.100.52
 ```
 
+### Authentication
+
+If your inverter requires Basic authentication, you can provide credentials:
+
+```bash
+python microtek.py --username admin --password admin
+```
+
+Or using short form:
+```bash
+python microtek.py -u admin -p admin
+```
+
 Or edit the `DEFAULT_INVERTER_IP` variable in `microtek.py` to set a default:
 ```python
 DEFAULT_INVERTER_IP = "192.168.100.52"  # Change this to your inverter's IP
@@ -37,9 +51,9 @@ DEFAULT_INVERTER_IP = "192.168.100.52"  # Change this to your inverter's IP
 python microtek.py
 ```
 
-2. Or specify custom IP address and port:
+2. Or specify custom IP address, authentication, and port:
 ```bash
-python microtek.py --ip 192.168.1.100 --port 8080 --host 127.0.0.1
+python microtek.py --ip 192.168.1.100 --port 8080 --host 127.0.0.1 --username admin --password admin
 ```
 
 3. The API will be available at `http://localhost:5000` (or your custom host/port)
@@ -54,6 +68,8 @@ Available options:
 - `--ip, --inverter-ip`: Inverter IP address (default: 192.168.100.52)
 - `--port`: Flask server port (default: 5000)
 - `--host`: Flask server host (default: 0.0.0.0)
+- `--username, -u`: Username for Basic authentication (optional)
+- `--password, -p`: Password for Basic authentication (optional)
 
 ## API Endpoints
 
